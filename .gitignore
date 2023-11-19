@@ -1,90 +1,89 @@
-# Xcode
-#
-# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+import UIKit
 
-## User settings
-xcuserdata/
 
-## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
-*.xcscmblueprint
-*.xccheckout
 
-## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
-build/
-DerivedData/
-*.moved-aside
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
 
-## Obj-C/Swift specific
-*.hmap
+class ViewController: UIViewController {
 
-## App packaging
-*.ipa
-*.dSYM.zip
-*.dSYM
+    var count = 0
+    var historyText = "История изменений:\n"
+    
+    // UI element
+    var label: UILabel!
+    var historyTextView: UITextView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-## Playgrounds
-timeline.xctimeline
-playground.xcworkspace
+        setupUI()
+    }
 
-# Swift Package Manager
-#
-# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
-# Packages/
-# Package.pins
-# Package.resolved
-# *.xcodeproj
-#
-# Xcode automatically generates this directory with a .xcworkspacedata file and xcuserdata
-# hence it is not needed unless you have added a package configuration file to your project
-# .swiftpm
+    func setupUI() {
+        //Label to display counter
+        label = UILabel()
+        label.text = "\(count)"
+        label.font = UIFont.systemFont(ofSize: 30)
+        label.textAlignment = .center
+        label.frame = CGRect(x: 0, y: 100, width: view.frame.width, height: 50)
+        view.addSubview(label)
 
-.build/
+        // button
+        createButton(title: "+", color: .red, action: #selector(increment), frame: CGRect(x: 50, y: 200, width: 50, height: 50))
+        createButton(title: "-", color: .blue, action: #selector(decrement), frame: CGRect(x: 150, y: 200, width: 50, height: 50))
+        createButton(title: "Сброс", color: .gray, action: #selector(reset), frame: CGRect(x: 250, y: 200, width: 100, height: 50))
 
-# CocoaPods
-#
-# We recommend against adding the Pods directory to your .gitignore. However
-# you should judge for yourself, the pros and cons are mentioned at:
-# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
-#
-# Pods/
-#
-# Add this line if you want to avoid checking in source code from the Xcode workspace
-# *.xcworkspace
+        // text
+        historyTextView = UITextView()
+        historyTextView.text = historyText
+        historyTextView.isEditable = false
+        historyTextView.frame = CGRect(x: 20, y: 300, width: view.frame.width - 40, height: 150)
+        view.addSubview(historyTextView)
+    }
 
-# Carthage
-#
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-# Carthage/Checkouts
+    func createButton(title: String, color: UIColor, action: Selector, frame: CGRect) {
+        let button = UIButton(type: .system)
+        button.setTitle(title, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        button.backgroundColor = color
+        button.addTarget(self, action: action, for: .touchUpInside)
+        button.frame = frame
+        view.addSubview(button)
+    }
 
-Carthage/Build/
+    @objc func increment() {
+        count += 1
+        updateLabelAndHistory(newValue: count, action: "увеличено на 1")
+    }
 
-# Accio dependency management
-Dependencies/
-.accio/
+    @objc func decrement() {
+        if count > 0 {
+            count -= 1
+            updateLabelAndHistory(newValue: count, action: "уменьшено на 1")
+        } else {
+            updateHistory(action: "попытка уменьшить значение счётчика ниже 0")
+        }
+    }
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo.
-# Instead, use fastlane to re-generate the screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/#source-control
+    @objc func reset() {
+        count = 0
+        updateLabelAndHistory(newValue: count, action: "сброшено")
+    }
 
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
+    func updateLabelAndHistory(newValue: Int, action: String) {
+        label.text = "\(newValue)"
+        updateHistory(action: action)
+    }
 
-# Code Injection
-#
-# After new code Injection tools there's a generated folder /iOSInjectionProject
-# https://github.com/johnno1962/injectionforxcode
+    func updateHistory(action: String) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let dateString = dateFormatter.string(from: Date())
+        historyText += "[\(dateString)]: \(action)\n"
+        historyTextView.text = historyText
 
-iOSInjectionProject/
+        // scroll down
+        let range = NSMakeRange(historyText.count - 1, 0)
+        historyTextView.scrollRangeToVisible(range)
+    }
+}
+
